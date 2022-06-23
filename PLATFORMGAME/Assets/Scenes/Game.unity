@@ -2743,8 +2743,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _ReplayLabel: {fileID: 1017004187}
   _ScoreLabel: {fileID: 723798106}
-  _JumpForce: 5
-  _MoveForce: 6
+  _JumpForce: 7
+  _MoveForce: 26
   _GameOverScale: {x: 0.7, y: 0.5, z: 1}
   _GameOverScaleSpeed: 0.2
   _Collider: {fileID: 1407027321}

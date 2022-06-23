@@ -44,49 +44,26 @@ public class Player : MonoBehaviour
     private int _Score = 0;
     private bool _GameOver;
 
+    private bool _InputLeft;
+    private bool _InputRight;
+    private Vector2 _JumpDir;
 
     void Start()
     {
         UpdateScoreLabel();
     }
 
-    void Update()
+    private void Update()
     {
-        if (_GameOver)
+        if (!_GameOver)
         {
-            _ReplayLabel.SetActive(Time.time % 0.5f < 0.4f);
-            transform.localScale = Vector3.Lerp(transform.localScale, _GameOverScale, Time.deltaTime * _GameOverScaleSpeed);
-        } else
-        {
-            
-            float torque = 0.0f;
-
-            var jumpDir = Vector2.down;
-
-            if (Input.GetKey((KeyCode.RightArrow)))
-            {
-                torque = -_MoveForce;
-                jumpDir += Vector2.right;
-            }
-            if (Input.GetKey((KeyCode.LeftArrow)))
-            {
-                torque = _MoveForce;
-                jumpDir += Vector2.left;
-            }
-
-            Rigidbody.AddTorque(torque);
-
+            _InputLeft = Input.GetKey(KeyCode.LeftArrow);
+            _InputRight = Input.GetKey(KeyCode.RightArrow);
+        
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                Rigidbody.AddForce(jumpDir * _JumpForce, ForceMode2D.Impulse);
+                Rigidbody.AddForce(_JumpDir * _JumpForce, ForceMode2D.Impulse);
                 _JumpSound.Play();
-            }
-
-            Rigidbody.angularVelocity = Mathf.Clamp(Rigidbody.angularVelocity, -5.0f, 5.0f);
-
-            if (transform.position.y < -10.0f)
-            {
-                GameOver();
             }
         }
 
@@ -98,6 +75,41 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Application.Quit();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        
+        if (_GameOver)
+        {
+            _ReplayLabel.SetActive(Time.time % 0.5f < 0.4f);
+            transform.localScale = Vector3.Lerp(transform.localScale, _GameOverScale, Time.deltaTime * _GameOverScaleSpeed);
+        } else
+        {
+            
+            float torque = 0.0f;
+
+            _JumpDir = Vector2.down;
+            if (_InputRight)
+            {
+                torque = -_MoveForce;
+                _JumpDir += Vector2.right;
+            }
+            if (_InputLeft)
+            {
+                torque = _MoveForce;
+                _JumpDir += Vector2.left;
+            }
+
+            Rigidbody.AddTorque(torque);
+
+            Rigidbody.angularVelocity = Mathf.Clamp(Rigidbody.angularVelocity, -25.0f, 25.0f);
+
+            if (transform.position.y < -10.0f)
+            {
+                GameOver();
+            }
         }
     }
 
@@ -145,7 +157,7 @@ public class Player : MonoBehaviour
     {
         if (collision.collider.tag == "Ground")
         {
-            _TouchGroundSound.volume = Rigidbody.velocity.sqrMagnitude;
+            _TouchGroundSound.volume = Rigidbody.velocity.sqrMagnitude * 0.03f;
             _TouchGroundSound.Play();
         }
     }
