@@ -17,7 +17,16 @@ public class Player : MonoBehaviour
     [SerializeField]private Vector3 _GameOverScale;
     [SerializeField]private float _GameOverScaleSpeed;
     [SerializeField]private Collider2D _Collider;
+    [SerializeField]private SpriteRenderer _Renderer;
 
+    [Header("Effects")]
+    [SerializeField]private GameObject _ScoreParticles;
+
+    [Header("Sounds")]
+    [SerializeField]private AudioSource _GameOverSound;
+    [SerializeField]private AudioSource _JumpSound;
+    [SerializeField]private AudioSource _TouchGroundSound;
+    [SerializeField]private AudioSource _ScoreSound;
 
     private Rigidbody2D _Rigidbody;
     public Rigidbody2D Rigidbody
@@ -54,12 +63,12 @@ public class Player : MonoBehaviour
 
             var jumpDir = Vector2.down;
 
-            if (Input.GetKey((KeyCode.D)))
+            if (Input.GetKey((KeyCode.RightArrow)))
             {
                 torque = -_MoveForce;
                 jumpDir += Vector2.right;
             }
-            if (Input.GetKey((KeyCode.A)))
+            if (Input.GetKey((KeyCode.LeftArrow)))
             {
                 torque = _MoveForce;
                 jumpDir += Vector2.left;
@@ -70,6 +79,7 @@ public class Player : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Rigidbody.AddForce(jumpDir * _JumpForce, ForceMode2D.Impulse);
+                _JumpSound.Play();
             }
 
             Rigidbody.angularVelocity = Mathf.Clamp(Rigidbody.angularVelocity, -5.0f, 5.0f);
@@ -95,6 +105,7 @@ public class Player : MonoBehaviour
     public void AddScore()
     {
         _Score++;
+        _ScoreSound.Play();
         UpdateScoreLabel();
     }
 
@@ -109,6 +120,8 @@ public class Player : MonoBehaviour
         _Collider.enabled = false;
         Rigidbody.gravityScale = 0.2f;
         Rigidbody.velocity = new Vector2(Rigidbody.velocity.x, 0.0f);
+        _Renderer.sortingOrder = 3;
+        _GameOverSound.Play();
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
@@ -117,17 +130,23 @@ public class Player : MonoBehaviour
         {
             case "Score":
                 AddScore();
+                var particles = Instantiate(_ScoreParticles);
+                particles.transform.position = collision.gameObject.transform.position;
                 Destroy(collision.gameObject);
                 break;
                 
             case "IronNail":
                 GameOver();
                 break;
-               
-            case "Ground":
-                break;
-                
         }
+    }
 
+    public void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.tag == "Ground")
+        {
+            _TouchGroundSound.volume = Rigidbody.velocity.sqrMagnitude;
+            _TouchGroundSound.Play();
+        }
     }
 }
